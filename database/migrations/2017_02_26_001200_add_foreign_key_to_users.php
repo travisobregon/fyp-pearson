@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateStaffTable extends Migration
+class AddForeignKeyToUsers extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreateStaffTable extends Migration
      */
     public function up()
     {
-        Schema::create('staff', function (Blueprint $table) {
-            $table->increments('id');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('store_id')
+                  ->references('id')->on('stores');
         });
     }
 
@@ -26,6 +26,8 @@ class CreateStaffTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('staff');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['store_id']);
+        });
     }
 }
