@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\Address;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Foundation\Auth\RegistersUsers;
 
 class RegisterController extends Controller
 {
@@ -51,18 +51,32 @@ class RegisterController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|min:6|confirmed',
+            'address_name' => 'required',
+            'city' => 'required|exists:cities,id',
+            'district' => 'required',
+            'postal_code' => 'required',
+            'phone' => 'required',
         ]);
     }
 
     /**
-     * Create a new user instance after a valid registration.
+     * Create a new address and user instance after a valid registration.
      *
      * @param  array  $data
      * @return User
      */
     protected function create(array $data)
     {
+        $address = Address::create([
+            'city_id' => $data['city'],
+            'name' => $data['address_name'],
+            'district' => $data['district'],
+            'postal_code' => $data['postal_code'],
+            'phone' => $data['phone'],
+        ]);
+
         return User::create([
+            'address_id' => $address->id,
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
