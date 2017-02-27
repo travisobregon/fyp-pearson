@@ -17,4 +17,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index');
+Route::get('home', 'HomeController@index');
+
+Route::resource('films', 'FilmsController');
+
+Route::get('suggestions', 'SuggestionsController@index');
+
+Route::post('ratings', 'RatingsController@store');

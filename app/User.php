@@ -35,4 +35,13 @@ class User extends Authenticatable
     protected $casts = [
         'is_staff' => 'boolean',
     ];
+
+    /**
+     * A user may rate multiple films.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function ratings() {
+        return $this->hasMany(Rating::class);
+    }
 }

@@ -14,4 +14,12 @@ class Film extends Model
     protected $casts = [
         'special_features' => 'array',
     ];
+
+    /**
+     * Get the language associated with the film.
+     */
+    public function language()
+    {
+        return $this->belongsTo(Language::class);
+    }
 }
