@@ -17,9 +17,11 @@ class RatingsController extends Controller
      */
     public function store()
     {
+        $wasSuggested = collect(Suggestion::find(auth()->id())->films)->has(request()->filmId);
+
         Rating::updateOrCreate(
-            ['user_id' => auth()->user()->id, 'film_id' => request()->filmId],
-            ['stars' => request()->rating]
+            ['user_id' => auth()->id(), 'film_id' => request()->filmId],
+            ['stars' => request()->rating, 'was_suggested' => $wasSuggested]
         );
 
         $film = Film::find(request()->filmId);
@@ -28,7 +30,7 @@ class RatingsController extends Controller
 
         $correlations = collect();
 
-        foreach (User::where('id', '<>', auth()->user()->id)->get() as $otherUser) {
+        foreach (User::where('id', '<>', auth()->id())->get() as $otherUser) {
             $correlation = pearson(auth()->user(), $otherUser);
 
             if (! is_null($correlation)) {
@@ -99,7 +101,6 @@ class RatingsController extends Controller
 
                 return [
                     'predicted_rating' => $predictedRating,
-                    'actual_rating' => null,
                 ];
             });
 

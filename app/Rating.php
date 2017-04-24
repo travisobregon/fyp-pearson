@@ -12,6 +12,6 @@ class Rating extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'film_id', 'stars',
+        'user_id', 'film_id', 'stars', 'was_suggested',
     ];
 }
