@@ -23,7 +23,7 @@ class FilmsController extends Controller
      */
     public function index()
     {
-        $films = Film::with('language')->orderBy('title', 'asc')->simplePaginate(20);
+        $films = Film::with('language', 'ratings')->orderBy('title', 'asc')->simplePaginate(20);
 
         return view('films.index', compact('films'));
     }

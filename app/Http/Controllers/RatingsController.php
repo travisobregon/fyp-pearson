@@ -42,41 +42,69 @@ class RatingsController extends Controller
         $correlations = $correlations->sortByDesc('correlation');
 
         $similarity = Similarity::updateOrCreate(
-            ['user_id' => auth()->user()->id],
+            ['user_id' => auth()->id()],
             ['other_users' => $correlations]
         );
 
-        $suggestions = collect();
+        $suggestions = [];
 
-        foreach (collect($similarity->other_users)->sortByDesc('correlation') as $otherUser) {
-            $ratings = User::find($otherUser['user_id'])
-                ->ratings
-                ->reject(function ($otherUserRating) {
-                    return auth()->user()->ratings->contains(function ($userRating) use ($otherUserRating) {
-                        return $userRating->film_id === $otherUserRating->film_id;
-                    });
-                })
-                ->filter(function ($otherUserRating) {
-                    return $otherUserRating->stars >= 3;
-                })
-                ->sortByDesc('stars')
-                ->pluck('film_id');
+        $nearestUsers = collect($similarity->other_users)
+            ->sortByDesc('correlation')
+            ->take(3);
 
-            if (! $ratings->isEmpty()) {
-                foreach ($ratings as $rating) {
-                    $suggestions[] = $rating;
+        $totalDistance = $nearestUsers->sum('correlation');
 
-                    if ($suggestions->count() >= 10) {
-                        break 2;
-                    }
+        foreach ($nearestUsers as $nearestUser) {
+            $weight = $nearestUser['correlation'] / $totalDistance;
+            $neighbour = User::with('ratings')->find($nearestUser['user_id']);
+
+            $neighbourRatings = $neighbour->ratings->reject(function ($otherUserRating) {
+                return auth()->user()->ratings->contains(function ($userRating) use ($otherUserRating) {
+                    return $userRating->film_id === $otherUserRating->film_id;
+                });
+            });
+
+            foreach ($neighbourRatings as $neighbourRating) {
+                if (isset($suggestions[$neighbourRating->film_id])) {
+                    $suggestions[$neighbourRating->film_id] = $suggestions[$neighbourRating->film_id] + $neighbourRating->stars * $weight;
+                } else {
+                    $suggestions[$neighbourRating->film_id] = $neighbourRating->stars * $weight;
                 }
             }
+        };
 
-            $suggestions = $suggestions->flatten()->unique();
-        }
+        arsort($suggestions);
+
+        $suggestions = collect($suggestions)->take(10)
+            ->map(function ($weight, $filmId) use ($nearestUsers) {
+                $predictedRating = null;
+                $totalDistance = 0.0;
+                $neighbours = [];
+
+                foreach ($nearestUsers as $nearestUser) {
+                    $neighbour = User::with('ratings')->find($nearestUser['user_id']);
+
+                    if ($neighbour->ratings->contains(function ($rating) use ($filmId) {
+                        return $filmId == $rating->film_id;
+                    })) {
+                        $totalDistance += $nearestUser['correlation'];
+                        $neighbours[] = $nearestUser;
+                    }
+                }
+
+                foreach ($neighbours as $neighbour) {
+                    $stars = Rating::where('user_id', $neighbour['user_id'])->where('film_id', $filmId)->first()->stars;
+                    $predictedRating += $stars * ($neighbour['correlation'] / $totalDistance);
+                }
+
+                return [
+                    'predicted_rating' => $predictedRating,
+                    'actual_rating' => null,
+                ];
+            });
 
         Suggestion::updateOrCreate(
-            ['user_id' => auth()->user()->id],
+            ['user_id' => auth()->id()],
             ['films' => $suggestions]
         );
 

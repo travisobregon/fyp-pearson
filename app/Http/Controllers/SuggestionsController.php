@@ -29,12 +29,11 @@ class SuggestionsController extends Controller
 
         if ($suggestions) {
             $films = collect(Suggestion::where('user_id', auth()->user()->id)->first(['films'])->films)
-                ->map(function ($filmId) {
+                ->sortByDesc('predicted_rating')
+                ->map(function ($film, $filmId) {
                     return Film::find($filmId);
                 });
         }
-
-
 
         return view('suggestions.index', compact('films'));
     }

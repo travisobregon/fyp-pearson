@@ -22,4 +22,13 @@ class Film extends Model
     {
         return $this->belongsTo(Language::class);
     }
+
+    /**
+     * A film may have multiple ratings.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function ratings() {
+        return $this->hasMany(Rating::class);
+    }
 }

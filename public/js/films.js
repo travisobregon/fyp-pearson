@@ -8,9 +8,8 @@ $('.ui.rating').click(function () {
     var filmId = film.attr('data-film-id');
 
     axios.post('/ratings', { rating: rating, filmId: filmId }).then(function (_ref) {
-        var data = _ref.data;
+        // film.rating('set rating', data);
 
-        console.log(data);
-        //film.rating('set rating', data);
+        var data = _ref.data;
     });
 });
