@@ -27,10 +27,9 @@ class SuggestionsController extends Controller
         $suggestions = Suggestion::where('user_id', auth()->user()->id)->first(['films']);
         $films = [];
 
-        if ($suggestions) {
-            $films = collect(Suggestion::where('user_id', auth()->user()->id)->first(['films'])->films)
-                ->sortByDesc('predicted_rating')
-                ->map(function ($film, $filmId) {
+        if ($suggestions->films) {
+            $films = collect($suggestions->films)
+                ->map(function ($filmId) {
                     return Film::find($filmId);
                 });
         }

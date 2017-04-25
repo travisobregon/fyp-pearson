@@ -24,3 +24,5 @@ Route::resource('films', 'FilmsController');
 Route::get('suggestions', 'SuggestionsController@index');
 
 Route::post('ratings', 'RatingsController@store');
+
+Route::get('metrics', 'MetricsController');

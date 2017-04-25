@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Film;
+use App\PredictedRating;
 use App\Rating;
 use App\Similarity;
 use App\Suggestion;
@@ -79,7 +80,7 @@ class RatingsController extends Controller
 
         $suggestions = collect($suggestions)->take(10)
             ->map(function ($weight, $filmId) use ($nearestUsers) {
-                $predictedRating = null;
+                $predictedRating = 0.0;
                 $totalDistance = 0.0;
                 $neighbours = [];
 
@@ -99,10 +100,14 @@ class RatingsController extends Controller
                     $predictedRating += $stars * ($neighbour['correlation'] / $totalDistance);
                 }
 
-                return [
-                    'predicted_rating' => $predictedRating,
-                ];
-            });
+                PredictedRating::updateOrCreate(
+                    ['user_id' => auth()->id(), 'film_id' => $filmId],
+                    ['stars' => $predictedRating]
+                );
+
+                return $filmId;
+            })
+            ->keys();
 
         Suggestion::updateOrCreate(
             ['user_id' => auth()->id()],

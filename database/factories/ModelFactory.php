@@ -92,6 +92,19 @@ $factory->define(App\Film::class, function (Faker\Generator $faker) {
     ];
 });
 
+$factory->define(App\Rating::class, function (Faker\Generator $faker) {
+    return [
+        'user_id' => function () {
+            return factory('App\User')->create()->id;
+        },
+        'film_id' => function () {
+            return factory('App\Film')->create()->id;
+        },
+        'stars' => $faker->numberBetween(1, 5),
+        'was_suggested' => $faker->boolean,
+    ];
+});
+
 $factory->define(App\Suggestion::class, function (Faker\Generator $faker) {
     factory('App\Film', 3)->create();
 
