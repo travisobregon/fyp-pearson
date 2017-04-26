@@ -18,7 +18,8 @@ class RatingsController extends Controller
      */
     public function store()
     {
-        $wasSuggested = collect(Suggestion::find(auth()->id())->films)->has(request()->filmId);
+        $suggestion = Suggestion::find(auth()->id());
+        $wasSuggested = $suggestion ? collect($suggestion->films)->has(request()->filmId) : false;
 
         Rating::updateOrCreate(
             ['user_id' => auth()->id(), 'film_id' => request()->filmId],
