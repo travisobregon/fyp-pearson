@@ -39,11 +39,12 @@ class User extends Authenticatable
     /**
      * Determine whether a user rated the given film.
      *
-     * @param Film $film
+     * @param int $filmId
      * @return bool
      */
-    public function rated(Film $film)
+    public function rated($filmId)
     {
+        $film = Film::find($filmId);
         return $film->ratings->contains(function ($rating) {
             return auth()->id() === $rating->user_id;
         });
@@ -52,11 +53,12 @@ class User extends Authenticatable
     /**
      * Get the stars the authenticated user gave for the given film.
      *
-     * @param Film $film
+     * @param int $filmId
      * @return int
      */
-    public function ratingFor(Film $film)
+    public function ratingFor($filmId)
     {
+        $film = Film::find($filmId);
         return $film->ratings()->where('user_id', auth()->id())->first()->stars;
     }
 

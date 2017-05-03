@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Film;
+use Folklore\GraphQL\Support\Facades\GraphQL;
 
 class FilmsController extends Controller
 {
@@ -23,9 +24,38 @@ class FilmsController extends Controller
      */
     public function index()
     {
-        $films = Film::with('language', 'ratings')->orderBy('title', 'asc')->simplePaginate(20);
+        $page = request()->has('page') ? request()->page : 1;
+        $query = "
+            {
+              films (page: ${page}) {
+                id
+                language {
+                  name
+                }
+                title
+                description
+                release_year
+                rental_duration
+                rental_rate
+                length
+                replacement_cost
+                rating
+                stars
+                special_features
+                created_at
+                updated_at
+              }
+            }
+        ";
+        $films = collect(GraphQL::queryAndReturnResult($query)->data['films'])->map(function ($film) {
+            $film = collect($film)->map(function ($field) {
+                return is_array($field) ? (object) $field : $field;
+            })->toArray();
 
-        return view('films.index', compact('films'));
+            return (object) $film;
+        });
+
+        return view('films.index', compact('films', 'page'));
     }
 
     /**

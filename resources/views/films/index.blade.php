@@ -16,8 +16,8 @@
                     <div class="meta is-flex">
                         <span class="flex">{{ $film->language->name }} {{ $film->release_year }}</span>
 
-                        @if (auth()->user()->rated($film))
-                            <span class="italic">Your rating: {{ auth()->user()->ratingFor($film) }}</span>
+                        @if (auth()->user()->rated($film->id))
+                            <span class="italic">Your rating: {{ auth()->user()->ratingFor($film->id) }}</span>
                         @endif
                     </div>
 
@@ -28,7 +28,15 @@
             </div>
         @endforeach
 
-        {{ $films->links() }}
+        <a href="/films?page={{ $page - 1 }}" class="ui left labeled icon button" rel="prev">
+            <i class="left chevron icon"></i>
+            @lang('pagination.previous')
+        </a>
+
+        <a href="/films?page={{ $page + 1 }}" class="ui right labeled icon button" rel="next">
+            <i class="right chevron icon"></i>
+            @lang('pagination.next')
+        </a>
     </div>
 @endsection
 
